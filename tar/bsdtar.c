@@ -820,6 +820,10 @@ main(int argc, char **argv)
 	if ((bsdtar->mode == '\0') && (bsdtar->option_print_stats == 1))
 		set_mode(bsdtar, OPTION_PRINT_STATS, "--print-stats");
 
+	/* Ditto for --dump-config. */
+	if ((bsdtar->mode == '\0') && (bsdtar->option_dump_config == 1))
+		set_mode(bsdtar, OPTION_DUMP_CONFIG, "--dump-config");
+
 	/* If no "real" mode was specified, treat -h as --help. */
 	if ((bsdtar->mode == '\0') && possible_help_request) {
 		long_help(bsdtar);
@@ -889,6 +893,7 @@ main(int argc, char **argv)
 	/* Continue with more sanity-checking. */
 	if ((bsdtar->ntapes == 0) &&
 	    (bsdtar->mode != OPTION_PRINT_STATS &&
+	     bsdtar->mode != OPTION_DUMP_CONFIG &&
 	     bsdtar->mode != OPTION_LIST_ARCHIVES &&
 	     bsdtar->mode != OPTION_RECOVER &&
 	     bsdtar->mode != OPTION_FSCK &&
@@ -1075,7 +1080,7 @@ main(int argc, char **argv)
 
 	/* Make sure we have whatever keys we're going to need. */
 	if (bsdtar->have_keys == 0) {
-		if (!bsdtar->option_dryrun) {
+		if ((!bsdtar->option_dryrun) && (!bsdtar->option_dump_config)) {
 			bsdtar_errc(bsdtar, 1, 0,
 			    "Keys must be provided via --keyfile option");
 		} else {
@@ -1120,6 +1125,7 @@ main(int argc, char **argv)
 	case OPTION_RECOVER_DELETE:
 		missingkey = crypto_keys_missing(CRYPTO_KEYMASK_AUTH_DELETE);
 		break;
+	case OPTION_DUMP_CONFIG:
 	case OPTION_PRINT_STATS:
 		/* We don't need keys for printing global stats. */
 		if (bsdtar->ntapes == 0)
